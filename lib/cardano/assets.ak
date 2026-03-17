@@ -134,10 +134,10 @@ fn do_contains(
   when subset is {
     [] -> True
     [head_subset, ..tail_subset] -> {
-      let head_superset, tail_superset <- pairs.pop_until_key_and_then(
-        self,
-        head_subset.1st,
-      )
+      let
+        head_superset,
+        tail_superset,
+      <- pairs.pop_until_key_and_then(self, head_subset.1st)
       and {
         when head_superset is {
           None -> False
@@ -196,15 +196,16 @@ pub fn has_any_nft(self: Value, policy: PolicyId) -> Bool {
 /// assets.has_any_nft_strict(value, "bar") == False
 /// ```
 pub fn has_any_nft_strict(self: Value, policy: PolicyId) -> Bool {
-  let check_inner = fn(p, inner) {
-    and {
-      policy == p,
-      when inner |> dict.to_pairs is {
-        [Pair(_, 1)] -> True
-        _ -> False
-      },
+  let check_inner =
+    fn(p, inner) {
+      and {
+        policy == p,
+        when inner |> dict.to_pairs is {
+          [Pair(_, 1)] -> True
+          _ -> False
+        },
+      }
     }
-  }
 
   when self.inner |> dict.to_pairs is {
     [Pair(p1, _), Pair(p2, inner)] -> and {
@@ -409,10 +410,11 @@ pub fn tokens(self: Value, policy_id: PolicyId) -> Dict<AssetName, Int> {
 /// > - There's **always** some lovelace in values from **inputs** or **outputs**.
 /// > - There's **never** any lovelace in values from **mint**.
 pub fn expect_lovelace_of(self: Value) -> Int {
-  expect Pair("", lovelaces) = self
-    |> to_dict
-    |> dict.to_pairs
-    |> builtin.head_list
+  expect Pair("", lovelaces) =
+    self
+      |> to_dict
+      |> dict.to_pairs
+      |> builtin.head_list
   lovelaces
     |> dict.to_pairs
     |> builtin.head_list
@@ -428,10 +430,11 @@ pub fn expect_match(
 ) -> Bool {
   let (left_lovelace, left_assets) = dict.pop(left.inner, ada_policy_id)
   let left_assets: Data = left_assets
-  let left_lovelace = when left_lovelace is {
-    Some(tokens) -> list.expect_head(dict.to_pairs(tokens)).2nd
-    None -> 0
-  }
+  let left_lovelace =
+    when left_lovelace is {
+      Some(tokens) -> list.expect_head(dict.to_pairs(tokens)).2nd
+      None -> 0
+    }
   when builtin.un_map_data(right) is {
     [] -> left_assets == right && assert_lovelace(left_lovelace, 0)
     [first_asset, ..right_assets] ->
@@ -551,20 +554,22 @@ pub fn add(
   if 0 == quantity {
     self
   } else {
-    let helper = fn(_, left, _right, keep, discard) {
-      let inner_result = dict.insert_with(
-        left,
-        asset_name,
-        quantity,
-        dict_strategy.sum_if_non_zero(),
-      )
+    let helper =
+      fn(_, left, _right, keep, discard) {
+        let inner_result =
+          dict.insert_with(
+            left,
+            asset_name,
+            quantity,
+            dict_strategy.sum_if_non_zero(),
+          )
 
-      if dict.empty == inner_result {
-        discard()
-      } else {
-        keep(inner_result)
+        if dict.empty == inner_result {
+          discard()
+        } else {
+          keep(inner_result)
+        }
       }
-    }
 
     Value(
       dict.insert_with(
@@ -583,12 +588,13 @@ pub fn difference(left v0: Value, right v1: Value) -> Value {
       v0.inner,
       v1.inner,
       fn(_, a0, a1, keep, discard) {
-        let result = dict.difference_with(
-          a0,
-          a1,
-          dict_strategy.difference_if_non_zero(),
-          dict_strategy.negate(),
-        )
+        let result =
+          dict.difference_with(
+            a0,
+            a1,
+            dict_strategy.difference_if_non_zero(),
+            dict_strategy.negate(),
+          )
         if dict.empty == result {
           discard()
         } else {
@@ -701,7 +707,172 @@ pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
   self.inner
 }
 
-/// Convert the value into an associative list of pairs.
-pub fn to_pairs(self: Value) -> Pairs<PolicyId, Dict<AssetName, Int>> {
-  self.inner |> dict.to_pairs
+/// Extract the quantity of a given asset, returning both the quantity and the remaining value after extraction. If the asset is not present, returns `0` and the original value.
+/// This is more efficient than a separate call to `quantity_of` and `difference` as it avoids traversing the data structure multiple times.
+///
+/// ```aiken
+/// let value = from_asset("a", "1", 10) |> add("a", "2", 20)
+/// let qty, rest <- extract_quantity_of(value, "a", "1")
+/// and {
+///   qty == 10,
+///   rest == from_asset("a", "2", 20),
+/// }
+/// ```
+pub fn extract_quantity_of(
+  self: Value,
+  policy_id: PolicyId,
+  asset_name: AssetName,
+  return: fn(Int, Value) -> any,
+) -> any {
+  let
+    k,
+    l_pid,
+  <- dict.extract_or_else(self.inner, policy_id, fn() { dict.empty })
+  let q, l_asset <- dict.extract_or_else(k, asset_name, fn() { 0 })
+  return(
+    q,
+    builtin.if_then_else(
+      dict.is_empty(l_asset),
+      Value(l_pid),
+      Value(dict.insert(l_pid, policy_id, l_asset)),
+    ),
+  )
+}
+
+/// Extract from empty value - should return 0
+test extract_quantity_of_empty() {
+  let qty, rest <- extract_quantity_of(zero, "a", "1")
+  and {
+    qty == 0,
+    rest == zero,
+  }
+}
+
+/// Extract non-existent asset - should return 0
+test extract_quantity_of_nonexistent_asset() {
+  let v = from_asset("a", "1", 10)
+  let qty, rest <- extract_quantity_of(v, "a", "2")
+  and {
+    qty == 0,
+    rest == v,
+  }
+}
+
+/// Extract from non-existent policy - should return 0
+test extract_quantity_of_nonexistent_policy() {
+  let v = from_asset("a", "1", 10)
+  let qty, rest <- extract_quantity_of(v, "b", "1")
+  and {
+    qty == 0,
+    rest == v,
+  }
+}
+
+/// Extract single asset in a policy - policy should be removed
+test extract_quantity_of_last_asset_in_policy() {
+  let v = from_asset("a", "1", 42)
+  let qty, rest <- extract_quantity_of(v, "a", "1")
+  and {
+    qty == 42,
+    rest == zero,
+  }
+}
+
+/// Extract asset when multiple exist in same policy
+test extract_quantity_of_multiple_assets_same_policy() {
+  let v =
+    from_asset("a", "1", 10)
+      |> add("a", "2", 20)
+      |> add("a", "3", 30)
+
+  let qty, rest <- extract_quantity_of(v, "a", "2")
+  and {
+    qty == 20,
+    rest == ( from_asset("a", "1", 10) |> add("a", "3", 30) ),
+  }
+}
+
+/// Extract when multiple policies exist
+test extract_quantity_of_multiple_policies() {
+  let v =
+    from_asset("a", "1", 10)
+      |> add("b", "1", 20)
+      |> add("c", "1", 30)
+
+  let qty, rest <- extract_quantity_of(v, "b", "1")
+  and {
+    qty == 20,
+    rest == ( from_asset("a", "1", 10) |> add("c", "1", 30) ),
+  }
+}
+
+/// Extract Ada with Ada present
+test extract_quantity_of_ada() {
+  let v = from_lovelace(5000000) |> add("a", "1", 100)
+  let qty, rest <- extract_quantity_of(v, ada_policy_id, ada_asset_name)
+  and {
+    qty == 5000000,
+    rest == from_asset("a", "1", 100),
+  }
+}
+
+/// Extract from Ada-only value
+test extract_quantity_of_ada_only() {
+  let v = from_lovelace(1000000)
+  let qty, rest <- extract_quantity_of(v, ada_policy_id, ada_asset_name)
+  and {
+    qty == 1000000,
+    rest == zero,
+  }
+}
+
+/// Complex scenario: multiple policies and assets
+test extract_quantity_of_complex() {
+  let v =
+    from_lovelace(10000000)
+      |> add("policy1", "asset1", 100)
+      |> add("policy1", "asset2", 200)
+      |> add("policy2", "asset1", 300)
+      |> add("policy2", "asset2", 400)
+
+  let qty, rest <- extract_quantity_of(v, "policy1", "asset1")
+  and {
+    qty == 100,
+    rest == (
+      from_lovelace(10000000)
+        |> add("policy1", "asset2", 200)
+        |> add("policy2", "asset1", 300)
+        |> add("policy2", "asset2", 400)
+    ),
+  }
+}
+
+/// Extract last asset from middle policy
+test extract_quantity_of_remove_policy() {
+  let v =
+    from_asset("policy1", "asset1", 100)
+      |> add("policy2", "asset1", 200)
+      |> add("policy3", "asset1", 300)
+
+  let qty, rest <- extract_quantity_of(v, "policy2", "asset1")
+  and {
+    qty == 200,
+    rest == (
+      from_asset("policy1", "asset1", 100)
+        |> add("policy3", "asset1", 300)
+    ),
+  }
+}
+
+/// Extract with negative quantities (debt)
+test extract_quantity_of_negative() {
+  let v =
+    from_asset("a", "1", 100)
+      |> add("a", "2", -50)
+
+  let qty, rest <- extract_quantity_of(v, "a", "2")
+  and {
+    qty == -50,
+    rest == from_asset("a", "1", 100),
+  }
 }
