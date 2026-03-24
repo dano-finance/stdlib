@@ -959,6 +959,31 @@ fn do_foldl(
 pub type Fold2<a, b, result> =
   fn(a, b) -> result
 
+/// Reduce a dictionary from left to right, while accumulating two results. This is
+/// faster (albeit equivalent) than accumulating both results in a `Pair` or tuple.
+///
+/// > [!TIP]
+/// > Using [`backpassing`](https://aiken-lang.org/language-tour/functions#backpassing-) to ease readability is a good idea.
+///
+/// ```aiken
+/// let result_a, result_b <-
+///   dict.empty
+///     |> dict.insert(key: "a", value: 100)
+///     |> dict.insert(key: "b", value: 200)
+///     |> dict.insert(key: "c", value: 300)
+///     |> dict.foldl2(
+///       zero_a: 0,
+///       zero_b: 1,
+///       with: fn(_k, v, a, b, return) {
+///         return(a + v, b * v)
+///       },
+///     )
+///
+/// and {
+///   result_a == 600
+///   result_b == 6000000
+/// }
+/// ```
 pub fn foldl2(
   self: Dict<key, value>,
   zero_a: a,
@@ -982,6 +1007,58 @@ fn do_foldl2(
       let a, b <- with(k, v, zero_a, zero_b)
       do_foldl2(tail, a, b, with, return)
     }
+  }
+}
+
+test foldl2_optimized() {
+  let
+    len,
+    sum,
+  <-
+    foldl2(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      0,
+      0,
+      fn(_, n, len, sum, return) { return(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+test foldl2_classic() {
+  let (len, sum) =
+    foldl(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      (0, 0),
+      fn(_, n, (len, sum)) { (len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
   }
 }
 
@@ -1017,6 +1094,31 @@ fn do_foldr(
   }
 }
 
+/// Reduce a dictionary from right to left, while accumulating two results. This is
+/// faster (albeit equivalent) than accumulating both results in a `Pair` or tuple.
+///
+/// > [!TIP]
+/// > Using [`backpassing`](https://aiken-lang.org/language-tour/functions#backpassing-) to ease readability is a good idea.
+///
+/// ```aiken
+/// let result_a, result_b <-
+///   dict.empty
+///     |> dict.insert(key: "a", value: 100)
+///     |> dict.insert(key: "b", value: 200)
+///     |> dict.insert(key: "c", value: 300)
+///     |> dict.foldr2(
+///       zero_a: 0,
+///       zero_b: 1,
+///       with: fn(_k, v, a, b, return) {
+///         return(a + v, b * v)
+///       },
+///     )
+///
+/// and {
+///   result_a == 600
+///   result_b == 6000000
+/// }
+/// ```
 pub fn foldr2(
   self: Dict<key, value>,
   zero_a: a,
@@ -1036,6 +1138,58 @@ fn do_foldr2(
     [] -> return
     [Pair(k, v), ..tail] ->
       do_foldr2(tail, with, fn(a, b) { with(k, v, a, b, return) })
+  }
+}
+
+test foldr2_optimized() {
+  let
+    len,
+    sum,
+  <-
+    foldr2(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      0,
+      0,
+      fn(_, n, len, sum, return) { return(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+test foldr2_classic() {
+  let (len, sum) =
+    foldr(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      (0, 0),
+      fn(_, n, (len, sum)) { (len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
   }
 }
 
