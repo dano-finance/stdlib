@@ -336,10 +336,11 @@ test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
   let b: ByteArray = #"cafe"
 
-  let x = a
-    |> from_bytearray_big_endian
-    |> add_bytes(b)
-    |> to_bytearray_big_endian
+  let x =
+    a
+      |> from_bytearray_big_endian
+      |> add_bytes(b)
+      |> to_bytearray_big_endian
 
   x == #"00000000000000000000000000000000000000000000000000000000000177a9"
 }
@@ -411,10 +412,11 @@ test unequal_pad_for_addition() {
   let a: ByteArray = #"acabbeefface"
   let b: ByteArray = #"cafe"
 
-  let x = a
-    |> from_bytearray_big_endian
-    |> add_bytes(b)
-    |> to_bytearray_big_endian
+  let x =
+    a
+      |> from_bytearray_big_endian
+      |> add_bytes(b)
+      |> to_bytearray_big_endian
 
   x == #"0000000000000000000000000000000000000000000000000000acabbef0c5cc"
 }

@@ -585,21 +585,23 @@ test filter_2() {
 }
 
 test filter_3() {
-  let filter_foldr = fn(xs, f) {
-    foldr(
-      xs,
-      [],
-      fn(x, ys) {
-        if f(x) {
-          [x, ..ys]
-        } else {
-          ys
-        }
-      },
-    )
-  }
+  let filter_foldr =
+    fn(xs, f) {
+      foldr(
+        xs,
+        [],
+        fn(x, ys) {
+          if f(x) {
+            [x, ..ys]
+          } else {
+            ys
+          }
+        },
+      )
+    }
 
-  let is_odd = fn(n) { builtin.mod_integer(n, 2) != 0 }
+  let is_odd =
+    fn(n) { builtin.mod_integer(n, 2) != 0 }
 
   filter_foldr([1, 2, 3], is_odd) == filter([1, 2, 3], is_odd)
 }
@@ -1076,11 +1078,12 @@ test foldl_3() {
 // ---------------------------------------------------------------------- foldl2
 
 test foldl2_classic() {
-  let (len, sum) = foldl(
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    (0, 0),
-    fn(n, (len, sum)) { (len + 1, sum + n) },
-  )
+  let (len, sum) =
+    foldl(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      (0, 0),
+      fn(n, (len, sum)) { (len + 1, sum + n) },
+    )
 
   and {
     len == 10,
@@ -1089,11 +1092,12 @@ test foldl2_classic() {
 }
 
 test foldl2_foo() {
-  let Foo(len, sum) = foldl(
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    Foo(0, 0),
-    fn(n, Foo(len, sum)) { Foo(len + 1, sum + n) },
-  )
+  let Foo(len, sum) =
+    foldl(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      Foo(0, 0),
+      fn(n, Foo(len, sum)) { Foo(len + 1, sum + n) },
+    )
 
   and {
     len == 10,
@@ -1102,12 +1106,16 @@ test foldl2_foo() {
 }
 
 test foldl2_optimized() {
-  let len, sum <- foldl2(
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    0,
-    0,
-    fn(n, len, sum, return) { return(len + 1, sum + n) },
-  )
+  let
+    len,
+    sum,
+  <-
+    foldl2(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      0,
+      0,
+      fn(n, len, sum, return) { return(len + 1, sum + n) },
+    )
 
   and {
     len == 10,
@@ -1116,11 +1124,12 @@ test foldl2_optimized() {
 }
 
 test foldl2_pair() {
-  let Pair(len, sum) = foldl(
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    Pair(0, 0),
-    fn(n, Pair(len, sum)) { Pair(len + 1, sum + n) },
-  )
+  let Pair(len, sum) =
+    foldl(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      Pair(0, 0),
+      fn(n, Pair(len, sum)) { Pair(len + 1, sum + n) },
+    )
 
   and {
     len == 10,
@@ -1155,12 +1164,16 @@ test foldr_3() {
 // ---------------------------------------------------------------------- foldr2
 
 test foldr2_optimized() {
-  let len, sum <- foldr2(
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    0,
-    0,
-    fn(n, len, sum, return) { return(len + 1, sum + n) },
-  )
+  let
+    len,
+    sum,
+  <-
+    foldr2(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      0,
+      0,
+      fn(n, len, sum, return) { return(len + 1, sum + n) },
+    )
 
   and {
     len == 10,

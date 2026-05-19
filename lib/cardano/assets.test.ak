@@ -247,15 +247,14 @@ fn apply_mutation(mutation: Mutation, tokens: Tokens) -> Tokens {
   let len = dict.size(tokens)
   when mutation is {
     ReduceQuantity(ix, n) | IncreaseQuantity(ix, n) -> {
-      expect [Pair(name, quantity), ..] = list.drop(
-        dict.to_pairs(tokens),
-        ix % len,
-      )
-      let new_quantity = if mutation == ReduceQuantity(ix, n) {
-        quantity - n
-      } else {
-        quantity + n
-      }
+      expect [Pair(name, quantity), ..] =
+        list.drop(dict.to_pairs(tokens), ix % len)
+      let new_quantity =
+        if mutation == ReduceQuantity(ix, n) {
+          quantity - n
+        } else {
+          quantity + n
+        }
       dict.insert(tokens, name, new_quantity)
     }
     InsertAsset(Pair(name, quantity)) ->
@@ -301,9 +300,10 @@ test from_ascending_pairs_4() {
 }
 
 test from_ascending_pairs_5() {
-  let v = from_ascending_pairs(
-    [Pair(#"33", dict.from_ascending_pairs([Pair(#"", 1), Pair(#"33", 1)]))],
-  )
+  let v =
+    from_ascending_pairs(
+      [Pair(#"33", dict.from_ascending_pairs([Pair(#"", 1), Pair(#"33", 1)]))],
+    )
   flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1)]
 }
 
@@ -328,13 +328,14 @@ test from_ascending_pairs_7() fail {
 }
 
 test from_ascending_pairs_8() {
-  let v = from_ascending_pairs(
-    [
-      Pair(#"33", dict.from_ascending_pairs([Pair(#"", 1), Pair(#"33", 1)])),
-      Pair(#"34", dict.singleton(#"31", 1)),
-      Pair(#"35", dict.singleton("", 1)),
-    ],
-  )
+  let v =
+    from_ascending_pairs(
+      [
+        Pair(#"33", dict.from_ascending_pairs([Pair(#"", 1), Pair(#"33", 1)])),
+        Pair(#"34", dict.singleton(#"31", 1)),
+        Pair(#"35", dict.singleton("", 1)),
+      ],
+    )
   flatten(v) == [
     (#"33", #"", 1), (#"33", #"33", 1), (#"34", #"31", 1), (#"35", #"", 1),
   ]
@@ -406,24 +407,26 @@ test from_asset_list_7() fail {
 }
 
 test from_asset_list_8() {
-  let v = from_asset_list(
-    [
-      Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]), Pair(#"34", [Pair(#"31", 1)]),
-      Pair(#"35", [Pair(#"", 1)]),
-    ],
-  )
+  let v =
+    from_asset_list(
+      [
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]), Pair(#"35", [Pair(#"", 1)]),
+      ],
+    )
   flatten(v) == [
     (#"33", #"", 1), (#"33", #"33", 1), (#"34", #"31", 1), (#"35", #"", 1),
   ]
 }
 
 test from_asset_list_9() {
-  let v = from_asset_list(
-    [
-      Pair(#"35", [Pair(#"", 1)]), Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
-      Pair(#"34", [Pair(#"31", 1)]),
-    ],
-  )
+  let v =
+    from_asset_list(
+      [
+        Pair(#"35", [Pair(#"", 1)]), Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]),
+      ],
+    )
   flatten(v) == [
     (#"33", #"", 1), (#"33", #"33", 1), (#"34", #"31", 1), (#"35", #"", 1),
   ]
@@ -898,8 +901,9 @@ test without_lovelace_2() {
 }
 
 test without_lovelace_3() {
-  let v = from_asset(#"010203", #"040506", 100)
-    |> add(ada_policy_id, ada_asset_name, 100000000)
+  let v =
+    from_asset(#"010203", #"040506", 100)
+      |> add(ada_policy_id, ada_asset_name, 100000000)
   let v2 = from_asset(#"010203", #"040506", 100)
   without_lovelace(v) == without_lovelace(v2) && without_lovelace(v) == v2
 }
@@ -907,36 +911,41 @@ test without_lovelace_3() {
 // ------------------------------------------------------------------------- add
 
 test add_1() {
-  let v = zero
-    |> add(#"acab", #"beef", 321)
-    |> add(#"acab", #"beef", -321)
+  let v =
+    zero
+      |> add(#"acab", #"beef", 321)
+      |> add(#"acab", #"beef", -321)
   v == zero
 }
 
 test add_2() {
-  let v = from_lovelace(123)
-    |> add(#"acab", #"beef", 321)
-    |> add(#"acab", #"beef", -1 * 321)
+  let v =
+    from_lovelace(123)
+      |> add(#"acab", #"beef", 321)
+      |> add(#"acab", #"beef", -1 * 321)
   v == from_lovelace(123)
 }
 
 test add_3() {
-  let v = from_lovelace(1)
-    |> add(ada_policy_id, ada_asset_name, 2)
-    |> add(ada_policy_id, ada_asset_name, 3)
+  let v =
+    from_lovelace(1)
+      |> add(ada_policy_id, ada_asset_name, 2)
+      |> add(ada_policy_id, ada_asset_name, 3)
   v == from_lovelace(6)
 }
 
 test add_4() {
-  let v = zero
-    |> add(#"acab", #"beef", 0)
+  let v =
+    zero
+      |> add(#"acab", #"beef", 0)
   v == zero
 }
 
 test add_5() {
-  let v = zero
-    |> add(#"acab", #"beef", 0)
-    |> add(#"acab", #"beef", 0)
+  let v =
+    zero
+      |> add(#"acab", #"beef", 0)
+      |> add(#"acab", #"beef", 0)
   v == zero
 }
 
@@ -955,9 +964,10 @@ test difference_1() {
 }
 
 test difference_2() {
-  let v = zero
-    |> add(#"acab", #"beef", 321)
-    |> add(#"f00d", #"cafe", 42)
+  let v =
+    zero
+      |> add(#"acab", #"beef", 321)
+      |> add(#"f00d", #"cafe", 42)
 
   and {
     (difference(v, v) == zero)?,
@@ -978,13 +988,15 @@ test difference_3() {
 }
 
 test difference_4() {
-  let left = zero
-    |> add(#"00", #"aa", 10)
-    |> add(#"00", #"bb", 4)
+  let left =
+    zero
+      |> add(#"00", #"aa", 10)
+      |> add(#"00", #"bb", 4)
 
-  let right = zero
-    |> add(#"00", #"aa", 10)
-    |> add(#"00", #"bb", 1)
+  let right =
+    zero
+      |> add(#"00", #"aa", 10)
+      |> add(#"00", #"bb", 1)
 
   let diff = [(#"00", #"bb", 3)]
 
@@ -1006,10 +1018,11 @@ test merge_2() {
   let v1 = from_asset(#"00", #"", 1)
   let v2 = from_asset(#"01", #"", 2)
   let v3 = from_asset(#"02", #"", 3)
-  let v = from_lovelace(42)
-    |> merge(v3)
-    |> merge(v1)
-    |> merge(v2)
+  let v =
+    from_lovelace(42)
+      |> merge(v3)
+      |> merge(v1)
+      |> merge(v2)
 
   flatten(v) == [
     (#"", #"", 42), (#"00", #"", 1), (#"01", #"", 2), (#"02", #"", 3),
@@ -1021,10 +1034,11 @@ test merge_3() {
   let v2 = from_asset(#"00", #"", -1)
   let v3 = from_asset(#"01", #"", 1)
 
-  let v = zero
-    |> merge(v1)
-    |> merge(v2)
-    |> merge(v3)
+  let v =
+    zero
+      |> merge(v1)
+      |> merge(v2)
+      |> merge(v3)
 
   flatten(v) == [(#"01", #"", 1)]
 }
@@ -1037,8 +1051,9 @@ test merge_4() {
 }
 
 test merge_5() {
-  let v = zero
-    |> add(#"acab", #"beef", 0)
+  let v =
+    zero
+      |> add(#"acab", #"beef", 0)
 
   merge(zero, v) == zero
 }
@@ -1050,10 +1065,11 @@ test flatten_with_1() {
 }
 
 test flatten_with_2() {
-  let v = zero
-    |> add("a", "1", 14)
-    |> add("b", "", 42)
-    |> add("a", "2", 42)
+  let v =
+    zero
+      |> add("a", "1", 14)
+      |> add("b", "", 42)
+      |> add("a", "2", 42)
 
   flatten_with(
     v,
@@ -1070,23 +1086,26 @@ test flatten_with_2() {
 // ---------------------------------------------------------------------- reduce
 
 test reduce_1() {
-  let v = zero
-    |> add("a", "1", 10)
-    |> add("b", "2", 20)
+  let v =
+    zero
+      |> add("a", "1", 10)
+      |> add("b", "2", 20)
   let result = reduce(v, 0, fn(_, _, quantity, acc) { acc + quantity })
   result == 30
 }
 
 test reduce_2() {
-  let v = zero
-    |> add("a", "1", 5)
-    |> add("a", "2", 15)
-    |> add("b", "", 10)
-  let result = reduce(
-    v,
-    [],
-    fn(policy_id, asset_name, _, acc) { [(policy_id, asset_name), ..acc] },
-  )
+  let v =
+    zero
+      |> add("a", "1", 5)
+      |> add("a", "2", 15)
+      |> add("b", "", 10)
+  let result =
+    reduce(
+      v,
+      [],
+      fn(policy_id, asset_name, _, acc) { [(policy_id, asset_name), ..acc] },
+    )
   result == [("a", "1"), ("a", "2"), ("b", "")]
 }
 

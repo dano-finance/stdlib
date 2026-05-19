@@ -276,27 +276,29 @@ pub const everything: Interval =
 /// interval.contains(iv, 42) == False
 /// ```
 pub fn contains(self: Interval, elem: Int) -> Bool {
-  let is_greater_than_lower_bound = when self.lower_bound.bound_type is {
-    NegativeInfinity -> True
-    Finite(lower_bound) ->
-      if self.lower_bound.is_inclusive {
-        elem >= lower_bound
-      } else {
-        elem > lower_bound
-      }
-    PositiveInfinity -> False
-  }
+  let is_greater_than_lower_bound =
+    when self.lower_bound.bound_type is {
+      NegativeInfinity -> True
+      Finite(lower_bound) ->
+        if self.lower_bound.is_inclusive {
+          elem >= lower_bound
+        } else {
+          elem > lower_bound
+        }
+      PositiveInfinity -> False
+    }
 
-  let is_smaller_than_upper_bound = when self.upper_bound.bound_type is {
-    NegativeInfinity -> False
-    Finite(upper_bound) ->
-      if self.upper_bound.is_inclusive {
-        elem <= upper_bound
-      } else {
-        elem < upper_bound
-      }
-    PositiveInfinity -> True
-  }
+  let is_smaller_than_upper_bound =
+    when self.upper_bound.bound_type is {
+      NegativeInfinity -> False
+      Finite(upper_bound) ->
+        if self.upper_bound.is_inclusive {
+          elem <= upper_bound
+        } else {
+          elem < upper_bound
+        }
+      PositiveInfinity -> True
+    }
 
   is_greater_than_lower_bound && is_smaller_than_upper_bound
 }
@@ -331,11 +333,12 @@ pub fn is_empty(Interval { lower_bound, upper_bound }: Interval) -> Bool {
       when upper_bound.bound_type is {
         NegativeInfinity -> True
         Finite(r) -> {
-          let l = if lower_bound.is_inclusive {
-            l
-          } else {
-            l + 1
-          }
+          let l =
+            if lower_bound.is_inclusive {
+              l
+            } else {
+              l + 1
+            }
           if upper_bound.is_inclusive {
             l > r
           } else {
@@ -393,21 +396,23 @@ pub fn is_entirely_before(self: Interval, point: Int) -> Bool {
 
 /// Obtain a human-readable string representation of the interval. Useful for debugging.
 pub fn to_string(self: Interval) -> String {
-  let lower_bracket = if self.lower_bound.is_inclusive {
-    @"["
-  } else {
-    @"("
-  }
+  let lower_bracket =
+    if self.lower_bound.is_inclusive {
+      @"["
+    } else {
+      @"("
+    }
 
   let lower_bound = bound_type_to_string(self.lower_bound.bound_type)
 
   let upper_bound = bound_type_to_string(self.upper_bound.bound_type)
 
-  let upper_bracket = if self.upper_bound.is_inclusive {
-    @"]"
-  } else {
-    @")"
-  }
+  let upper_bracket =
+    if self.upper_bound.is_inclusive {
+      @"]"
+    } else {
+      @")"
+    }
 
   lower_bracket
     |> string.concat(lower_bound)

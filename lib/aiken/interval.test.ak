@@ -316,26 +316,28 @@ test prop_includes_intersection((a, b) via both(interval, interval)) {
 }
 
 test prop_includes_intersection_reg() {
-  let a = Interval {
-    lower_bound: IntervalBound {
-      bound_type: interval.Finite(41),
-      is_inclusive: True,
-    },
-    upper_bound: IntervalBound {
-      bound_type: interval.PositiveInfinity,
-      is_inclusive: True,
-    },
-  }
-  let b = Interval {
-    lower_bound: IntervalBound {
-      bound_type: interval.Finite(41),
-      is_inclusive: False,
-    },
-    upper_bound: IntervalBound {
-      bound_type: interval.Finite(42),
-      is_inclusive: True,
-    },
-  }
+  let a =
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: interval.Finite(41),
+        is_inclusive: True,
+      },
+      upper_bound: IntervalBound {
+        bound_type: interval.PositiveInfinity,
+        is_inclusive: True,
+      },
+    }
+  let b =
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: interval.Finite(41),
+        is_inclusive: False,
+      },
+      upper_bound: IntervalBound {
+        bound_type: interval.Finite(42),
+        is_inclusive: True,
+      },
+    }
 
   let intersection = interval.intersection(a, b)
 

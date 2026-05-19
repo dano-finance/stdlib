@@ -1,10 +1,11 @@
 use aiken/builtin
 use aiken/collection/dict.{
   contains, delete, difference_with, empty, expect_contains, expect_delete,
-  expect_find, expect_get, expect_has_key, expect_pop, expect_tail, filter, find,
-  foldl, foldl2, foldr, foldr2, from_ascending_pairs, from_pairs, get,
-  get_or_else, has_key, insert, insert_with, is_empty, keys, map, pop, singleton,
-  size, to_pairs, union, union_with, values,
+  expect_find, expect_get, expect_has_key, expect_pop, expect_tail,
+  extract_or_else, filter, find, foldl, foldl2, foldr, foldr2,
+  from_ascending_pairs, from_pairs, get, get_or_else, has_key, insert,
+  insert_with, is_empty, keys, map, pop, singleton, size, to_pairs, union,
+  union_with, values,
 }
 use aiken/collection/dict/strategy
 use aiken/primitive/int
@@ -106,14 +107,15 @@ fn tautology(a: a) -> Bool {
 // -------------------------------------------------------- from_ascending_pairs
 
 test from_ascending_pairs_bench() {
-  let dict = from_ascending_pairs(
-    [
-      Pair("aaaa", 1), Pair("aaab", 9), Pair("aaba", 5), Pair("aabb", 13),
-      Pair("abaa", 2), Pair("abab", 10), Pair("abba", 6), Pair("abbb", 14),
-      Pair("baaa", 3), Pair("baab", 11), Pair("baba", 7), Pair("babb", 15),
-      Pair("bbaa", 4), Pair("bbab", 12), Pair("bbba", 8), Pair("bbbb", 16),
-    ],
-  )
+  let dict =
+    from_ascending_pairs(
+      [
+        Pair("aaaa", 1), Pair("aaab", 9), Pair("aaba", 5), Pair("aabb", 13),
+        Pair("abaa", 2), Pair("abab", 10), Pair("abba", 6), Pair("abbb", 14),
+        Pair("baaa", 3), Pair("baab", 11), Pair("baba", 7), Pair("babb", 15),
+        Pair("bbaa", 4), Pair("bbab", 12), Pair("bbba", 8), Pair("bbbb", 16),
+      ],
+    )
 
   size(dict) == 16
 }
@@ -139,14 +141,15 @@ test from_pairs_4() {
 }
 
 test from_pairs_bench() {
-  let dict = from_pairs(
-    [
-      Pair("bbba", 8), Pair("bbab", 12), Pair("aabb", 13), Pair("aaab", 9),
-      Pair("bbbb", 16), Pair("aaaa", 1), Pair("aaba", 5), Pair("abab", 10),
-      Pair("baba", 7), Pair("baab", 11), Pair("abaa", 2), Pair("baaa", 3),
-      Pair("bbaa", 4), Pair("babb", 15), Pair("abbb", 14), Pair("abba", 6),
-    ],
-  )
+  let dict =
+    from_pairs(
+      [
+        Pair("bbba", 8), Pair("bbab", 12), Pair("aabb", 13), Pair("aaab", 9),
+        Pair("bbbb", 16), Pair("aaaa", 1), Pair("aaba", 5), Pair("abab", 10),
+        Pair("baba", 7), Pair("baab", 11), Pair("abaa", 2), Pair("baaa", 3),
+        Pair("bbaa", 4), Pair("babb", 15), Pair("abbb", 14), Pair("abba", 6),
+      ],
+    )
 
   size(dict) == 16
 }
@@ -234,16 +237,18 @@ test expect_get_1() fail {
 }
 
 test expect_get_2() {
-  let m = empty
-    |> insert(foo, "Aiken")
-    |> insert(bar, "awesome")
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
   expect_get(m, key: foo) == "Aiken"
 }
 
 test expect_get_3() fail {
-  let m = empty
-    |> insert(foo, "Aiken")
-    |> insert(bar, "awesome")
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
   expect_get(m, key: baz) |> tautology
 }
 
@@ -376,16 +381,18 @@ test get_1() {
 }
 
 test get_2() {
-  let m = empty
-    |> insert(foo, "Aiken")
-    |> insert(bar, "awesome")
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
   get(m, key: foo) == Some("Aiken")
 }
 
 test get_3() {
-  let m = empty
-    |> insert(foo, "Aiken")
-    |> insert(bar, "awesome")
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
   get(m, key: baz) == None
 }
 
@@ -412,16 +419,18 @@ test get_or_else_1() {
 }
 
 test get_or_else_2() {
-  let m = empty
-    |> insert(foo, "Aiken")
-    |> insert(bar, "awesome")
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
   get_or_else(m, key: foo, or_else: fn() { "" }) == "Aiken"
 }
 
 test get_or_else_3() {
-  let m = empty
-    |> insert(foo, "Aiken")
-    |> insert(bar, "awesome")
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
   get_or_else(m, key: baz, or_else: fn() { "missing?" }) == "missing?"
 }
 
@@ -542,28 +551,32 @@ test delete_1() {
 }
 
 test delete_2() {
-  let m = empty
-    |> insert(foo, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
   delete(m, foo) == empty
 }
 
 test delete_3() {
-  let m = empty
-    |> insert(foo, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
   delete(m, bar) == m
 }
 
 test delete_4() {
-  let m = empty
-    |> insert(foo, 14)
-    |> insert(bar, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
   !has_key(delete(m, foo), foo)
 }
 
 test delete_5() {
-  let m = empty
-    |> insert(foo, 14)
-    |> insert(bar, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
   has_key(delete(m, bar), foo)
 }
 
@@ -586,29 +599,33 @@ test difference_with_1() {
 }
 
 test difference_with_2() {
-  let left = empty
-    |> insert(foo, 14)
-    |> insert(bar, 42)
+  let left =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 42)
 
   difference_with(left, empty, strategy.sum(), strategy.keep()) == left
 }
 
 test difference_with_3() {
-  let right = empty
-    |> insert(foo, 14)
-    |> insert(bar, 42)
+  let right =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 42)
 
   difference_with(empty, right, strategy.sum(), strategy.keep()) == right
 }
 
 test difference_with_4() {
-  let left = empty
-    |> insert("a", 100)
-    |> insert("b", 200)
+  let left =
+    empty
+      |> insert("a", 100)
+      |> insert("b", 200)
 
-  let right = empty
-    |> insert("a", 150)
-    |> insert("c", 300)
+  let right =
+    empty
+      |> insert("a", 150)
+      |> insert("c", 300)
 
   let result = difference_with(left, right, strategy.sum(), strategy.keep())
 
@@ -616,40 +633,41 @@ test difference_with_4() {
 }
 
 test difference_with_5() {
-  let left = empty
-    |> insert("a", 100)
-    |> insert("b", 200)
-    |> insert("c", 300)
+  let left =
+    empty
+      |> insert("a", 100)
+      |> insert("b", 200)
+      |> insert("c", 300)
 
-  let right = empty
-    |> insert("a", 100)
-    |> insert("c", 300)
+  let right =
+    empty
+      |> insert("a", 100)
+      |> insert("c", 300)
 
-  let result = difference_with(
-    left,
-    right,
-    strategy.difference_if_non_zero(),
-    strategy.discard(),
-  )
+  let result =
+    difference_with(
+      left,
+      right,
+      strategy.difference_if_non_zero(),
+      strategy.discard(),
+    )
 
   result == from_pairs([Pair("b", 200)])
 }
 
 test difference_with_6() {
-  let left = empty
-    |> insert("a", 100)
-    |> insert("b", 200)
+  let left =
+    empty
+      |> insert("a", 100)
+      |> insert("b", 200)
 
-  let right = empty
-    |> insert("a", 150)
-    |> insert("c", 300)
+  let right =
+    empty
+      |> insert("a", 150)
+      |> insert("c", 300)
 
-  let result = difference_with(
-    left,
-    right,
-    strategy.difference(),
-    strategy.negate(),
-  )
+  let result =
+    difference_with(left, right, strategy.difference(), strategy.negate())
 
   result == from_pairs([Pair("a", -50), Pair("b", 200), Pair("c", -300)])
 }
@@ -661,71 +679,81 @@ test filter_1() {
 }
 
 test filter_2() {
-  let expected = empty
-    |> insert(foo, 42)
+  let expected =
+    empty
+      |> insert(foo, 42)
   filter(fixture_1, fn(_, v) { v > 14 }) == expected
 }
 
 test filter_3() {
-  let expected = empty
-    |> insert(bar, 14)
+  let expected =
+    empty
+      |> insert(bar, 14)
   filter(fixture_1, fn(k, _) { k == bar }) == expected
 }
 
 // ---------------------------------------------------------------------- insert
 
 test insert_1() {
-  let m1 = empty
-    |> insert(foo, 42)
-  let m2 = empty
-    |> insert(foo, 14)
+  let m1 =
+    empty
+      |> insert(foo, 42)
+  let m2 =
+    empty
+      |> insert(foo, 14)
   insert(m1, foo, 14) == m2
 }
 
 test insert_2() {
-  let m1 = empty
-    |> insert(foo, 42)
-  let m2 = empty
-    |> insert(bar, 14)
+  let m1 =
+    empty
+      |> insert(foo, 42)
+  let m2 =
+    empty
+      |> insert(bar, 14)
   insert(m1, bar, 14) == insert(m2, foo, 42)
 }
 
 // ----------------------------------------------------------------- insert_with
 
 test insert_with_1() {
-  let result = empty
-    |> insert_with(key: "foo", value: 1, with: strategy.sum())
-    |> insert_with(key: "bar", value: 2, with: strategy.sum())
-    |> to_pairs()
+  let result =
+    empty
+      |> insert_with(key: "foo", value: 1, with: strategy.sum())
+      |> insert_with(key: "bar", value: 2, with: strategy.sum())
+      |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
 }
 
 test insert_with_2() {
-  let result = empty
-    |> insert_with(key: "foo", value: 1, with: strategy.sum())
-    |> insert_with(key: "bar", value: 2, with: strategy.sum())
-    |> insert_with(key: "foo", value: 3, with: strategy.sum())
-    |> to_pairs()
+  let result =
+    empty
+      |> insert_with(key: "foo", value: 1, with: strategy.sum())
+      |> insert_with(key: "bar", value: 2, with: strategy.sum())
+      |> insert_with(key: "foo", value: 3, with: strategy.sum())
+      |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 4)]
 }
 
 test insert_with_3() {
-  let with = fn(k, a, _b, keep, discard) {
-    if k == "foo" {
-      keep(a)
-    } else {
-      discard()
+  let with =
+    fn(k, a, _b, keep, discard) {
+      if k == "foo" {
+        keep(a)
+      } else {
+        discard()
+      }
     }
-  }
 
-  let result = empty
-    |> insert_with(key: "foo", value: 1, with: with)
-    |> insert_with(key: "bar", value: 2, with: with)
-    |> insert_with(key: "foo", value: 3, with: with)
-    |> insert_with(key: "bar", value: 4, with: with)
-    |> to_pairs()
+  let result =
+    empty
+      |> insert_with(key: "foo", value: 1, with: with)
+      |> insert_with(key: "bar", value: 2, with: with)
+      |> insert_with(key: "foo", value: 3, with: with)
+      |> insert_with(key: "bar", value: 4, with: with)
+      |> to_pairs()
 
   result == [Pair("foo", 1)]
 }
@@ -733,14 +761,16 @@ test insert_with_3() {
 // ------------------------------------------------------------------------- map
 
 test map_1() {
-  let result = fixture_1
-    |> map(with: fn(k, _) { k })
+  let result =
+    fixture_1
+      |> map(with: fn(k, _) { k })
   get(result, foo) == Some(foo)
 }
 
 test map_2() {
-  let result = fixture_1
-    |> map(with: fn(_, v) { v + 1 })
+  let result =
+    fixture_1
+      |> map(with: fn(_, v) { v + 1 })
   get(result, foo) == Some(43) && size(result) == size(fixture_1)
 }
 
@@ -751,29 +781,33 @@ test pop_1() {
 }
 
 test pop_2() {
-  let m = empty
-    |> insert(foo, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
   pop(m, foo) == (Some(14), empty)
 }
 
 test pop_3() {
-  let m = empty
-    |> insert(foo, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
   pop(m, bar) == (None, m)
 }
 
 test pop_4() {
-  let m = empty
-    |> insert(foo, 14)
-    |> insert(bar, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
   pop(m, foo) == (Some(14), empty |> insert(bar, 14))
 }
 
 test pop_5() {
-  let m = empty
-    |> insert("a", 1)
-    |> insert("b", 2)
-    |> insert("c", 3)
+  let m =
+    empty
+      |> insert("a", 1)
+      |> insert("b", 2)
+      |> insert("c", 3)
   pop(m, "a") == (Some(1), empty |> insert("b", 2) |> insert("c", 3))
 }
 
@@ -806,16 +840,18 @@ test expect_delete_3() fail {
 }
 
 test expect_delete_4() {
-  let m = empty
-    |> insert(foo, 14)
-    |> insert(bar, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
   !has_key(expect_delete(m, foo), foo)
 }
 
 test expect_delete_5() {
-  let m = empty
-    |> insert(foo, 14)
-    |> insert(bar, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
   has_key(expect_delete(m, bar), foo)
 }
 
@@ -838,29 +874,33 @@ test expect_pop_1() fail {
 }
 
 test expect_pop_2() {
-  let m = empty
-    |> insert(foo, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
   expect_pop(m, foo) == (14, empty)
 }
 
 test expect_pop_3() fail {
-  let m = empty
-    |> insert(foo, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
   expect_pop(m, bar) |> tautology
 }
 
 test expect_pop_4() {
-  let m = empty
-    |> insert(foo, 14)
-    |> insert(bar, 14)
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
   expect_pop(m, foo) == (14, empty |> insert(bar, 14))
 }
 
 test expect_pop_5() {
-  let m = empty
-    |> insert("a", 1)
-    |> insert("b", 2)
-    |> insert("c", 3)
+  let m =
+    empty
+      |> insert("a", 1)
+      |> insert("b", 2)
+      |> insert("c", 3)
   expect_pop(m, "a") == (1, empty |> insert("b", 2) |> insert("c", 3))
 }
 
@@ -901,34 +941,40 @@ test union_2() {
 }
 
 test union_3() {
-  let left = empty
-    |> insert(foo, 14)
-  let right = empty
-    |> insert(bar, 42)
-    |> insert(baz, 1337)
+  let left =
+    empty
+      |> insert(foo, 14)
+  let right =
+    empty
+      |> insert(bar, 42)
+      |> insert(baz, 1337)
   union(left, right) == from_pairs(
     [Pair(foo, 14), Pair(baz, 1337), Pair(bar, 42)],
   )
 }
 
 test union_4() {
-  let left = empty
-    |> insert(foo, 14)
-  let right = empty
-    |> insert(bar, 42)
-    |> insert(foo, 1337)
+  let left =
+    empty
+      |> insert(foo, 14)
+  let right =
+    empty
+      |> insert(bar, 42)
+      |> insert(foo, 1337)
   union(left, right) == from_pairs([Pair(foo, 14), Pair(bar, 42)])
 }
 
 // ------------------------------------------------------------------ union_with
 
 test union_with_1() {
-  let left = empty
-    |> insert(foo, 14)
+  let left =
+    empty
+      |> insert(foo, 14)
 
-  let right = empty
-    |> insert(bar, 42)
-    |> insert(foo, 1337)
+  let right =
+    empty
+      |> insert(bar, 42)
+      |> insert(foo, 1337)
 
   let result = union_with(left, right, with: strategy.sum())
 
@@ -938,21 +984,77 @@ test union_with_1() {
 // ---------------------------------------------------------------------- foldl2
 
 test foldl2_size_and_merge() {
-  let size, merge <- foldl2(
-    fixture_bench,
-    0,
-    "",
-    fn(k, v, size, merge, return) {
-      return(
-        size + 1,
-        builtin.append_bytearray(merge, builtin.append_bytearray(k, v)),
-      )
-    },
-  )
+  let
+    size,
+    merge,
+  <-
+    foldl2(
+      fixture_bench,
+      0,
+      "",
+      fn(k, v, size, merge, return) {
+        return(
+          size + 1,
+          builtin.append_bytearray(merge, builtin.append_bytearray(k, v)),
+        )
+      },
+    )
 
   and {
     size == 11,
     merge == "aaa1bbb2ccc3ddd4eee5fff6ggg7hhh8iii9jjj10kkk11",
+  }
+}
+
+test foldl2_optimized() {
+  let
+    len,
+    sum,
+  <-
+    foldl2(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      0,
+      0,
+      fn(_, n, len, sum, return) { return(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+test foldl2_classic() {
+  let (len, sum) =
+    foldl(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      (0, 0),
+      fn(_, n, (len, sum)) { (len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
   }
 }
 
@@ -969,21 +1071,77 @@ test foldr_2() {
 // ---------------------------------------------------------------------- foldr2
 
 test foldr2_size_and_merge() {
-  let size, merge <- foldr2(
-    fixture_bench,
-    0,
-    "",
-    fn(k, v, size, merge, return) {
-      return(
-        size + 1,
-        builtin.append_bytearray(merge, builtin.append_bytearray(k, v)),
-      )
-    },
-  )
+  let
+    size,
+    merge,
+  <-
+    foldr2(
+      fixture_bench,
+      0,
+      "",
+      fn(k, v, size, merge, return) {
+        return(
+          size + 1,
+          builtin.append_bytearray(merge, builtin.append_bytearray(k, v)),
+        )
+      },
+    )
 
   and {
     size == 11,
     merge == "kkk11jjj10iii9hhh8ggg7fff6eee5ddd4ccc3bbb2aaa1",
+  }
+}
+
+test foldr2_optimized() {
+  let
+    len,
+    sum,
+  <-
+    foldr2(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      0,
+      0,
+      fn(_, n, len, sum, return) { return(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+test foldr2_classic() {
+  let (len, sum) =
+    foldr(
+      empty
+        |> insert(key: "1", value: 1)
+        |> insert(key: "2", value: 2)
+        |> insert(key: "3", value: 3)
+        |> insert(key: "4", value: 4)
+        |> insert(key: "5", value: 5)
+        |> insert(key: "6", value: 6)
+        |> insert(key: "7", value: 7)
+        |> insert(key: "8", value: 8)
+        |> insert(key: "9", value: 9)
+        |> insert(key: "10", value: 10),
+      (0, 0),
+      fn(_, n, (len, sum)) { (len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
   }
 }
 
@@ -1005,4 +1163,153 @@ test to_list_1() {
 
 test to_list_2() {
   to_pairs(fixture_1) == [Pair(bar, 14), Pair(foo, 42)]
+}
+
+// ---------------------------------------------------------------------- extract_or_else
+
+test extract_or_else_empty() {
+  let v, d <- extract_or_else(empty, foo, fn() { 999 })
+  and {
+    v == 999,
+    d == empty,
+  }
+}
+
+test extract_or_else_existing_key() {
+  let m =
+    empty
+      |> insert(foo, 42)
+      |> insert(bar, 14)
+
+  let v, d <- extract_or_else(m, foo, fn() { 0 })
+  and {
+    v == 42,
+    d == ( empty |> insert(bar, 14) ),
+  }
+}
+
+test extract_or_else_nonexistent_key() {
+  let m =
+    empty
+      |> insert(foo, 42)
+      |> insert(bar, 14)
+
+  let v, d <- extract_or_else(m, baz, fn() { 999 })
+  and {
+    v == 999,
+    d == m,
+  }
+}
+
+test extract_or_else_single_element() {
+  let m = empty |> insert(foo, 100)
+
+  let v, d <- extract_or_else(m, foo, fn() { 0 })
+  and {
+    v == 100,
+    d == empty,
+  }
+}
+
+test extract_or_else_first_key() {
+  let m =
+    empty
+      |> insert(baz, 100)
+      |> insert(foo, 200)
+      |> insert(bar, 300)
+
+  let v, d <- extract_or_else(m, bar, fn() { 0 })
+  and {
+    v == 300,
+    d == ( empty |> insert(baz, 100) |> insert(foo, 200) ),
+  }
+}
+
+test extract_or_else_last_key() {
+  let m =
+    empty
+      |> insert(foo, 100)
+      |> insert(bar, 200)
+      |> insert(baz, 300)
+
+  let v, d <- extract_or_else(m, foo, fn() { 0 })
+  and {
+    v == 100,
+    d == ( empty |> insert(bar, 200) |> insert(baz, 300) ),
+  }
+}
+
+test extract_or_else_middle_key() {
+  let m =
+    empty
+      |> insert(bar, 100)
+      |> insert(baz, 200)
+      |> insert(foo, 300)
+
+  let v, d <- extract_or_else(m, baz, fn() { 0 })
+  and {
+    v == 200,
+    d == ( empty |> insert(bar, 100) |> insert(foo, 300) ),
+  }
+}
+
+test extract_or_else_multiple_keys() {
+  let m =
+    empty
+      |> insert("aaa", 1)
+      |> insert("bbb", 2)
+      |> insert("ccc", 3)
+      |> insert("ddd", 4)
+      |> insert("eee", 5)
+
+  let v, d <- extract_or_else(m, "ccc", fn() { 0 })
+  and {
+    v == 3,
+    to_pairs(d) == [
+      Pair("aaa", 1), Pair("bbb", 2), Pair("ddd", 4), Pair("eee", 5),
+    ],
+  }
+}
+
+test extract_or_else_dict_structure() {
+  let m =
+    empty
+      |> insert("key1", 10)
+      |> insert("key2", 20)
+      |> insert("key3", 30)
+
+  let v, d <- extract_or_else(m, "key2", fn() { 0 })
+  and {
+    v == 20,
+    size(d) == 2,
+    has_key(d, "key1"),
+    has_key(d, "key3"),
+    !has_key(d, "key2"),
+  }
+}
+
+test extract_or_else_chained() {
+  let m =
+    empty
+      |> insert("x", 100)
+      |> insert("y", 200)
+      |> insert("z", 300)
+
+  let v1, d1 <- extract_or_else(m, "y", fn() { 0 })
+  let v2, d2 <- extract_or_else(d1, "z", fn() { 0 })
+  and {
+    v1 == 200,
+    v2 == 300,
+    d2 == ( empty |> insert("x", 100) ),
+  }
+}
+
+test extract_or_else_or_else_default() {
+  let m = empty |> insert(foo, 42)
+
+  let v, d <- extract_or_else(m, bar, fn() { 999 })
+  and {
+    v == 999,
+    d == m,
+  }
 }

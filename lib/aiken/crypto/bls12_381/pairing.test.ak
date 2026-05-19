@@ -15,12 +15,14 @@ test simple_miller_loop_with_final_exponentiation() {
 
   let message: ByteArray = #"acab"
 
-  let challenge: G2Element = message
-    |> g2.hash_to_group(domain_separation_tag_nul)
+  let challenge: G2Element =
+    message
+      |> g2.hash_to_group(domain_separation_tag_nul)
 
-  let witness: G2Element = message
-    |> g2.hash_to_group(domain_separation_tag_nul)
-    |> g2.scale(secret)
+  let witness: G2Element =
+    message
+      |> g2.hash_to_group(domain_separation_tag_nul)
+      |> g2.scale(secret)
 
   final_exponentiation(
     miller_loop(public_value, challenge),

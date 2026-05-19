@@ -3,10 +3,11 @@ use aiken/collection/pairs.{
   delete_all, delete_first, delete_last, expect_delete_first, expect_find_first,
   expect_find_last, expect_get_first, expect_get_last, expect_has_key,
   expect_pop_until, expect_pop_until_and_then, expect_pop_until_key,
-  expect_pop_until_key_and_then, find_all, find_first, find_last, foldl, foldr,
-  get_all, get_first, get_last, has_key, insert_by_ascending_key,
-  insert_with_by_ascending_key, keys, map, pop_until, pop_until_and_then,
-  pop_until_key, pop_until_key_and_then, repsert_by_ascending_key, values,
+  expect_pop_until_key_and_then, extract_or_else, find_all, find_first,
+  find_last, foldl, foldr, get_all, get_first, get_last, has_key,
+  insert_by_ascending_key, insert_with_by_ascending_key, keys, map, pop_until,
+  pop_until_and_then, pop_until_key, pop_until_key_and_then,
+  repsert_by_ascending_key, values,
 }
 use aiken/primitive/bytearray
 
@@ -442,18 +443,20 @@ test delete_last_4() {
 // ----------------------------------------------------- insert_by_ascending_key
 
 test insert_by_ascending_key_1() {
-  let m = []
-    |> insert_by_ascending_key("foo", 42, bytearray.compare)
-    |> insert_by_ascending_key("foo", 14, bytearray.compare)
+  let m =
+    []
+      |> insert_by_ascending_key("foo", 42, bytearray.compare)
+      |> insert_by_ascending_key("foo", 14, bytearray.compare)
 
   m == [Pair("foo", 14), Pair("foo", 42)]
 }
 
 test insert_by_ascending_key_2() {
-  let m = []
-    |> insert_by_ascending_key("foo", 42, bytearray.compare)
-    |> insert_by_ascending_key("bar", 14, bytearray.compare)
-    |> insert_by_ascending_key("baz", 1337, bytearray.compare)
+  let m =
+    []
+      |> insert_by_ascending_key("foo", 42, bytearray.compare)
+      |> insert_by_ascending_key("bar", 14, bytearray.compare)
+      |> insert_by_ascending_key("baz", 1337, bytearray.compare)
 
   m == [Pair("bar", 14), Pair("baz", 1337), Pair("foo", 42)]
 }
@@ -461,51 +464,55 @@ test insert_by_ascending_key_2() {
 // ------------------------------------------------ insert_with_by_ascending_key
 
 test insert_with_by_ascending_key_1() {
-  let compare_un_b_data = fn(l, r) {
-    bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
-  }
+  let compare_un_b_data =
+    fn(l, r) {
+      bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
+    }
 
-  let m = []
-    |> insert_with_by_ascending_key(
-        "foo" |> builtin.b_data,
-        42,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
-    |> insert_with_by_ascending_key(
-        "foo" |> builtin.b_data,
-        14,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
+  let m =
+    []
+      |> insert_with_by_ascending_key(
+          "foo" |> builtin.b_data,
+          42,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> insert_with_by_ascending_key(
+          "foo" |> builtin.b_data,
+          14,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
 
   m == [Pair("foo" |> builtin.b_data, 56)]
 }
 
 test insert_with_by_ascending_key_2() {
-  let compare_un_b_data = fn(l, r) {
-    bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
-  }
+  let compare_un_b_data =
+    fn(l, r) {
+      bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
+    }
 
-  let m = []
-    |> insert_with_by_ascending_key(
-        "foo" |> builtin.b_data,
-        42,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
-    |> insert_with_by_ascending_key(
-        "bar" |> builtin.b_data,
-        14,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
-    |> insert_with_by_ascending_key(
-        "baz" |> builtin.b_data,
-        1337,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
+  let m =
+    []
+      |> insert_with_by_ascending_key(
+          "foo" |> builtin.b_data,
+          42,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> insert_with_by_ascending_key(
+          "bar" |> builtin.b_data,
+          14,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> insert_with_by_ascending_key(
+          "baz" |> builtin.b_data,
+          1337,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
 
   m == [
     Pair("bar" |> builtin.b_data, 14),
@@ -515,29 +522,31 @@ test insert_with_by_ascending_key_2() {
 }
 
 test insert_with_by_ascending_key_3() {
-  let compare_un_b_data = fn(l, r) {
-    bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
-  }
+  let compare_un_b_data =
+    fn(l, r) {
+      bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
+    }
 
-  let result = []
-    |> insert_with_by_ascending_key(
-        "foo" |> builtin.b_data,
-        1,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
-    |> insert_with_by_ascending_key(
-        "bar" |> builtin.b_data,
-        2,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
-    |> insert_with_by_ascending_key(
-        "foo" |> builtin.b_data,
-        3,
-        compare_un_b_data,
-        builtin.add_integer,
-      )
+  let result =
+    []
+      |> insert_with_by_ascending_key(
+          "foo" |> builtin.b_data,
+          1,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> insert_with_by_ascending_key(
+          "bar" |> builtin.b_data,
+          2,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> insert_with_by_ascending_key(
+          "foo" |> builtin.b_data,
+          3,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
 
   result == [Pair("bar" |> builtin.b_data, 2), Pair("foo" |> builtin.b_data, 4)]
 }
@@ -655,18 +664,20 @@ test pop_until_key_and_then_bench() {
 // ---------------------------------------------------- repsert_by_ascending_key
 
 test repsert_by_ascending_key_1() {
-  let m = []
-    |> repsert_by_ascending_key("foo", 42, bytearray.compare)
-    |> repsert_by_ascending_key("foo", 14, bytearray.compare)
+  let m =
+    []
+      |> repsert_by_ascending_key("foo", 42, bytearray.compare)
+      |> repsert_by_ascending_key("foo", 14, bytearray.compare)
 
   m == [Pair("foo", 14)]
 }
 
 test repsert_by_ascending_key_2() {
-  let m = []
-    |> repsert_by_ascending_key("foo", 42, bytearray.compare)
-    |> repsert_by_ascending_key("bar", 14, bytearray.compare)
-    |> repsert_by_ascending_key("baz", 1337, bytearray.compare)
+  let m =
+    []
+      |> repsert_by_ascending_key("foo", 42, bytearray.compare)
+      |> repsert_by_ascending_key("bar", 14, bytearray.compare)
+      |> repsert_by_ascending_key("baz", 1337, bytearray.compare)
 
   m == [Pair("bar", 14), Pair("baz", 1337), Pair("foo", 42)]
 }
@@ -837,4 +848,193 @@ test foldr_4() {
           fn(k, v, str) { bytearray.concat(str, bytearray.concat(k, v)) },
         )
   )
+}
+
+// ----------------------------------------------------------------------- extract_or_else
+
+/// Extract from empty pairs - returns or_else value
+test extract_or_else_empty() {
+  let v, p <- extract_or_else([], "a", fn() { 999 })
+  and {
+    v == 999,
+    p == [],
+  }
+}
+
+/// Extract existing key - returns value and remaining pairs
+test extract_or_else_existing_key() {
+  let v, p <- extract_or_else([Pair("a", 1), Pair("b", 2)], "a", fn() { 0 })
+  and {
+    v == 1,
+    p == [Pair("b", 2)],
+  }
+}
+
+/// Extract non-existent key - returns or_else value and unchanged pairs
+test extract_or_else_nonexistent_key() {
+  let p_orig = [Pair("a", 1), Pair("b", 2)]
+  let v, p <- extract_or_else(p_orig, "c", fn() { 999 })
+  and {
+    v == 999,
+    p == p_orig,
+  }
+}
+
+/// Extract from pairs with single element
+test extract_or_else_single_element() {
+  let v, p <- extract_or_else([Pair("a", 100)], "a", fn() { 0 })
+  and {
+    v == 100,
+    p == [],
+  }
+}
+
+/// Extract first occurrence when duplicate keys exist
+test extract_or_else_first_duplicate() {
+  let
+    v,
+    p,
+  <-
+    extract_or_else([Pair("a", 1), Pair("a", 2), Pair("a", 3)], "a", fn() { 0 })
+  and {
+    v == 1,
+    p == [Pair("a", 2), Pair("a", 3)],
+  }
+}
+
+/// Extract from middle of pairs
+test extract_or_else_middle() {
+  let
+    v,
+    p,
+  <-
+    extract_or_else([Pair("a", 1), Pair("b", 2), Pair("c", 3)], "b", fn() { 0 })
+  and {
+    v == 2,
+    p == [Pair("a", 1), Pair("c", 3)],
+  }
+}
+
+/// Extract from end of pairs
+test extract_or_else_end() {
+  let
+    v,
+    p,
+  <-
+    extract_or_else([Pair("a", 1), Pair("b", 2), Pair("c", 3)], "c", fn() { 0 })
+  and {
+    v == 3,
+    p == [Pair("a", 1), Pair("b", 2)],
+  }
+}
+
+/// Extract with complex values
+test extract_or_else_complex_values() {
+  let
+    v,
+    p,
+  <-
+    extract_or_else(
+      [Pair("key1", [1, 2, 3]), Pair("key2", [4, 5, 6])],
+      "key1",
+      fn() { [] },
+    )
+  and {
+    v == [1, 2, 3],
+    p == [Pair("key2", [4, 5, 6])],
+  }
+}
+
+/// Extract with chained operations
+test extract_or_else_chained() {
+  let
+    v1,
+    p1,
+  <-
+    extract_or_else(
+      [Pair("x", 10), Pair("y", 20), Pair("z", 30)],
+      "y",
+      fn() { 0 },
+    )
+  let v2, p2 <- extract_or_else(p1, "z", fn() { 0 })
+  and {
+    v1 == 20,
+    v2 == 30,
+    p2 == [Pair("x", 10)],
+  }
+}
+
+/// Extract all elements one by one
+test extract_or_else_sequential() {
+  let
+    v1,
+    p1,
+  <-
+    extract_or_else([Pair("a", 1), Pair("b", 2), Pair("c", 3)], "a", fn() { 0 })
+  let v2, p2 <- extract_or_else(p1, "b", fn() { 0 })
+  let v3, p3 <- extract_or_else(p2, "c", fn() { 0 })
+  and {
+    v1 == 1,
+    v2 == 2,
+    v3 == 3,
+    p3 == [],
+  }
+}
+
+/// Extract with or_else called (key not found)
+test extract_or_else_or_else_called() {
+  let v, p <- extract_or_else([Pair("a", 1)], "b", fn() { 999 })
+  and {
+    v == 999,
+    p == [Pair("a", 1)],
+  }
+}
+
+/// Extract with duplicate keys, then extract different key
+test extract_or_else_duplicates_then_different() {
+  let
+    v1,
+    p1,
+  <-
+    extract_or_else([Pair("a", 1), Pair("a", 2), Pair("b", 3)], "a", fn() { 0 })
+  let v2, p2 <- extract_or_else(p1, "b", fn() { 0 })
+  and {
+    v1 == 1,
+    v2 == 3,
+    p2 == [Pair("a", 2)],
+  }
+}
+
+/// Extract from large pairs list
+test extract_or_else_large_list() {
+  let p =
+    [
+      Pair("a", 1), Pair("b", 2), Pair("c", 3), Pair("d", 4), Pair("e", 5),
+      Pair("f", 6), Pair("g", 7), Pair("h", 8),
+    ]
+  let v, remaining <- extract_or_else(p, "d", fn() { 0 })
+  and {
+    v == 4,
+    remaining == [
+      Pair("a", 1), Pair("b", 2), Pair("c", 3), Pair("e", 5), Pair("f", 6),
+      Pair("g", 7), Pair("h", 8),
+    ],
+  }
+}
+
+/// Extract preserves order of remaining elements
+test extract_or_else_preserves_order() {
+  let
+    v,
+    p,
+  <-
+    extract_or_else(
+      [Pair(1, "a"), Pair(2, "b"), Pair(3, "c"), Pair(4, "d")],
+      2,
+      fn() { "" },
+    )
+  and {
+    v == "b",
+    p == [Pair(1, "a"), Pair(3, "c"), Pair(4, "d")],
+  }
 }

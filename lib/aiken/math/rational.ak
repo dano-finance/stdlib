@@ -447,10 +447,11 @@ pub fn round(self: Rational) -> Int {
 pub fn round_even(self: Rational) -> Int {
   let (n, f) = proper_fraction(self)
 
-  let m = when compare(f, ratio(0, 1)) is {
-    Less -> -1
-    _ -> 1
-  }
+  let m =
+    when compare(f, ratio(0, 1)) is {
+      Less -> -1
+      _ -> 1
+    }
 
   let is_even = n % 2 == 0
 
